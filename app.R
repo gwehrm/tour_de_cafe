@@ -32,7 +32,8 @@ shinyApp(
       )
     ),
     sidebar = dashboardSidebar(collapsed = TRUE,
-                               googleSignInUI("demo")),
+                               googleSignInUI("demo"),
+                               textOutput("g_name")),
     body = dashboardBody(
       
       uiOutput("page")
