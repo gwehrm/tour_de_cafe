@@ -32,7 +32,8 @@ shinyApp(
       )
     ),
     sidebar = dashboardSidebar(collapsed = TRUE,
-                               googleSignInUI("demo")),
+                               googleSignInUI("demo"),
+                               textOutput("g_name")),
     body = dashboardBody(
       
       uiOutput("page")
@@ -46,7 +47,11 @@ shinyApp(
     
     sign_ins <- googleSignIn("demo")
     
-    output$g_name = renderText({ sign_ins()$name })
+    output$g_name = renderText({ 
+      browser()
+      validate(need(input$g_name, message = ""))
+      input$g_name
+      })
     
     output$page <- renderUI({
       map_ui("map")
