@@ -16,7 +16,6 @@ library(shinyMobile)
 library(apexcharter)
 library(dplyr)
 library(ggplot2)
-library(tidygeocoder)
 
 library(ggmap)
 
