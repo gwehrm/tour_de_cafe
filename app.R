@@ -20,14 +20,20 @@ library(ggplot2)
 library(ggmap)
 
 
+
+
 config <- config::get()
 
 source("modules/module_map.R")
+source("modules/module_own_route.R")
 
 library(shiny)
 library(shinyMobile)
 library(apexcharter)
 library(shinyWidgets)
+
+
+
 
 shinyApp(
   ui = f7Page(
@@ -47,27 +53,21 @@ shinyApp(
           tabName = "Tab1",
           icon = f7Icon("arrow_swap"),
           active = TRUE,
-          
+  
           map_ui("map")),
           
         f7Tab(
           tabName = "Tab2",
-          icon = f7Icon("map"),
+          icon = f7Icon("pencil"),
           active = FALSE,
-          f7Shadow(
-            intensity = 10,
-            hover = TRUE,
-            f7Card(
-              title = "Card header",
-              apexchartOutput("scatter")
-            )
-          )
+          own_route_ui("own_route")
         )
       )
     )
   ),
   server = function(input, output, session) {
     map_server("map")
+    own_route_server("own_route")
   }
 )
 

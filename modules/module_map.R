@@ -11,15 +11,7 @@ map_ui <- function(id) {
       column(12,
              f7Card(
                title = "Optimal Route",
-               textOutput(ns("time")),
-               f7Gauge(ns("gauge_time"),
-                       type = "semicircle",
-                       value = 0,
-                       labelText = "Time Savings"),
-               f7Gauge(ns("gauge_distance"),
-                       type = "semicircle",
-                       value = 0,
-                       labelText = "Distance Savings")
+               textOutput(ns("time"))
              )),
       
       column(12,
@@ -86,7 +78,7 @@ map_server <- function(id) {
                          c(-122.30515784870903, 47.65305289588021), #MCSFT
                          c(-122.30252583500187, 47.65368750630508) # DB
       )
-      
+
       rownames(locations) <- locations_text
       
       values$selected_locations <- locations[input$cafe_routes, ]
@@ -152,6 +144,7 @@ map_server <- function(id) {
       total_trip <- data.frame("duration" = numeric(),
                                "distance" = numeric())
       for(i in 1:nrow(values$selected_locations)) {
+        print(i)
         if (i == nrow(values$selected_locations)) {
           route <- osrmRoute(src = values$selected_locations[i,],
                              dst = values$selected_locations[1,])
