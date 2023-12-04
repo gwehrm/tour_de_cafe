@@ -10,53 +10,67 @@ library(bslib)
 library(bsicons)
 library(googleAuthR)
 library(config)
+library(shinyjs)
+library(shinyMobile)
 
+library(apexcharter)
+library(dplyr)
+library(ggplot2)
+library(tidygeocoder)
+
+library(ggmap)
+
+
+options(shiny.port = 4829)
 config <- config::get()
 
 source("modules/module_map.R")
 
-
-options(googleAuthR.webapp.client_id = config$google_client_id)
-
+library(shiny)
+library(shinyMobile)
+library(apexcharter)
+library(shinyWidgets)
 
 shinyApp(
-  ui = dashboardPage(
-    header = dashboardHeader(
-      disable = TRUE,
-
-      title = dashboardBrand(
-        title = "Tour De Cafes",
-        color = "primary",
-        href = "",
-        image = "bialetti.png"
+  ui = f7Page(
+    title = "Tour De Cafés",
+    options = list(dark = FALSE),
+    f7TabLayout(
+      navbar = f7Navbar(
+        title = "Tour De Cafés",
+        hairline = TRUE,
+        shadow = TRUE,
+        leftPanel = FALSE,
+        rightPanel = FALSE
+      ),
+      f7Tabs(
+        animated = TRUE,
+        f7Tab(
+          tabName = "Tab1",
+          icon = f7Icon("arrow_swap"),
+          active = TRUE,
+          
+          map_ui("map")),
+          
+        f7Tab(
+          tabName = "Tab2",
+          icon = f7Icon("map"),
+          active = FALSE,
+          f7Shadow(
+            intensity = 10,
+            hover = TRUE,
+            f7Card(
+              title = "Card header",
+              apexchartOutput("scatter")
+            )
+          )
+        )
       )
-    ),
-    sidebar = dashboardSidebar(collapsed = TRUE,
-                               googleSignInUI("demo"),
-                               textOutput("g_name")),
-    body = dashboardBody(
-      
-      uiOutput("page")
-
-    ),
-    controlbar = dashboardControlbar(),
-    title = "DashboardPage"
+    )
   ),
-  server = function(input, output) {
-    
-    
-    sign_ins <- googleSignIn("demo")
-    
-    output$g_name = renderText({ 
-      browser()
-      validate(need(input$g_name, message = ""))
-      input$g_name
-      })
-    
-    output$page <- renderUI({
-      map_ui("map")
-    })
-    
+  server = function(input, output, session) {
     map_server("map")
   }
 )
+
+

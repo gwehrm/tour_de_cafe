@@ -1,29 +1,39 @@
 
 # module uebersicht
-locations_text <- c("Hub", "Orin's", "By George", "Public Grounds", "Tower", "Rotunda", "Evolutionary Grounds", "Microsoft", "Dawg Bites")
+locations_text <- c("Hub", "Orin's", "By George", "Public Grounds", "Tower", "Rotunda", "Evo", "Microsoft", "Dawg Bites")
 
 map_ui <- function(id) {
   ns <- NS(id)
   
   tagList(
-    
+
     fluidRow(
-      column(6,
-             value_box(
-               title = "Duration",
-               value = textOutput(ns("time")),
-               showcase = bs_icon("clock"))),
-      column(6,
-             value_box(
-               title = "Distance",
-               value = textOutput(ns("distance")),
-               showcase = bs_icon("arrows"))
-      )
-    ),
+      column(12,
+             f7Card(
+               title = "Optimal Route",
+               textOutput(ns("time")),
+               f7Gauge(ns("gauge_time"),
+                       type = "semicircle",
+                       value = 0,
+                       labelText = "Time Savings"),
+               f7Gauge(ns("gauge_distance"),
+                       type = "semicircle",
+                       value = 0,
+                       labelText = "Distance Savings")
+             )),
+      
+      column(12,
+             f7Card(title = "Map",
+                    leafletOutput(ns("trip_map"))
+             )
+      ),
+
+      
+      column(12,
+             
+            
     
-    box(title = "Adjust your route (1st is starting point)",
-        type = "success",
-        width = 12,
+             f7Card(title = "Select which Cafés you visit today (1st is starting point)",
         bucket_list(
           header = NULL,
           add_rank_list(
@@ -32,18 +42,23 @@ map_ui <- function(id) {
             input_id = ns("cafe_routes")
           ),
           add_rank_list(
-            text = "Ignored",
+            text = "Cafes not on route",
             labels = NULL
-          )),
-        collapsible = TRUE),
-
-    box(title = "Map",
-        type = "success",
-        width = 12,
-        collapsible = TRUE,
-        leafletOutput(ns("trip_map"))
+          )
         )
+)
+      ),
+column(12,
+       f7Card(
+         title = "Savings",
+         textOutput(ns("savings"))
+       )),
+column(12,
+       
+       )
 
+
+)
            
 
     
@@ -74,9 +89,9 @@ map_server <- function(id) {
       
       rownames(locations) <- locations_text
       
-      locations <- locations[input$cafe_routes, ]
+      values$selected_locations <- locations[input$cafe_routes, ]
       
-      values$trips <- osrmTrip(loc = locations, osrm.profile = "car")
+      values$trips <- osrmTrip(loc = values$selected_locations, osrm.profile = "car")
       
       trip <- values$trips[[1]]$trip
       
@@ -87,9 +102,9 @@ map_server <- function(id) {
                                 TRUE ~ stop)) %>% 
         dplyr::select(cafe = end, stop)
       
-      locations_df <- locations %>% 
+      locations_df <- values$selected_locations %>% 
         as.data.frame() %>% 
-        mutate(cafe = rownames(locations)) %>% 
+        mutate(cafe = rownames(values$selected_locations)) %>% 
         left_join(trip_stops, by = "cafe")
       
       map <- leaflet() %>% 
@@ -98,7 +113,7 @@ map_server <- function(id) {
         addCircleMarkers(lat = locations_df$V2,
                          lng = locations_df$V1,
                          color = "red",
-                         label = locations_df$stop,
+                         label = paste0(locations_df$cafe," \n ", locations_df$stop),
                          stroke = FALSE,
                          radius = 8,
                          fillOpacity = 0.8,
@@ -108,17 +123,61 @@ map_server <- function(id) {
     
     output$time <- renderText({
       validate(need(values$trips, ""))
-      paste0("The trip takes ", round(values$trips[[1]]$summary$duration, 2), " mins to complete without stops")
+      
+      paste0("The new optimal route would take you ", round(values$trips[[1]]$summary$duration, 2), " minutes to complete by car. ",
+             "The total distance is ", round(values$trips[[1]]$summary$distance, 2), " kilometers.")
       
     })
     
-    output$distance <- renderText({
+    output$savings <- renderText({
       validate(need(values$trips, ""))
-      paste0("The trips distance is ", round(values$trips[[1]]$summary$distance, 2), " kilometers")
+      validate(need(values$total_trip, ""))
+      
+      saving_total_duration <- sum(values$total_trip$duration) - values$trips[[1]]$summary$duration
+      values$saving_percentage_duration <- saving_total_duration/values$trips[[1]]$summary$duration * 100
+      
+      
+      saving_total_distance <- sum(values$total_trip$distance) - values$trips[[1]]$summary$distance
+      values$saving_percentage_distance <- saving_total_distance/values$trips[[1]]$summary$distance * 100
+
+      paste0("This savings are estimated by comparing a tour that would go in the order as they appear in the box to the optimal route. ",
+      "\nEstimated percentage in time saved: ", round(values$saving_percentage_duration, 2), "%",
+      "\nEstimated percentage in distance saved: ", round(values$saving_percentage_distance, 2), "%")
       
     })
     
+    observe({
+      validate(need(values$selected_locations, message =""))
+      
+      total_trip <- data.frame("duration" = numeric(),
+                               "distance" = numeric())
+      for(i in 1:nrow(values$selected_locations)) {
+        if (i == nrow(values$selected_locations)) {
+          route <- osrmRoute(src = values$selected_locations[i,],
+                             dst = values$selected_locations[1,])
+        } else {
+          route <- osrmRoute(src = values$selected_locations[i,],
+                             dst = values$selected_locations[i + 1,]
+          )
+        }
+        total_trip <- total_trip %>% 
+          bind_rows(data.frame("duration" = route$duration,
+                               "distance" = route$distance))
+      }
+      values$total_trip <- total_trip
+    })
+    
+    observeEvent(values$saving_percentage_duration,{
+      updateF7Gauge(id = "map-gauge_time",
+      value = round(values$saving_percentage_duration, 2 ))
+      
+      updateF7Gauge(id = "map-gauge_distance",
+                    value = round(values$saving_percentage_distance, 2))
+      
+    })
 
+    
+    
 
   })
 }
