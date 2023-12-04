@@ -21,7 +21,6 @@ library(tidygeocoder)
 library(ggmap)
 
 
-options(shiny.port = 4829)
 config <- config::get()
 
 source("modules/module_map.R")
