@@ -11,26 +11,29 @@ own_route_ui <- function(id) {
                textOutput(ns("explanation"))
              )),
       column(12,
-             f7Text(ns("lat_long"), label = "Latitude, Longitude", placeholder = "(e.g.: 47.61, -122.21)")
-      ),
+             f7Card(title = "Choose Location",
+             leafletOutput(ns("select_map")))),
+      
       column(12,
-             f7Text(ns("label"), label = "Label", placeholder = "My favorite bar")
-      ),
-      column(12,
-             f7Button(ns("add"), label = "Add Location")),
-      br(),
-      column(12,
-             uiOutput(ns("list"))
-             
-      ),
-      br(),
-      column(3,
-             f7Button(ns("reset"), label = "Reset", color = "red")),
-      br(),
-      column(12,
-             uiOutput(ns("new_export_button"))
+             f7Card(
+               id = "input_manual",
+               title = "Add to List",
+               
+               f7Text(ns("lat_long"), label = "Latitude, Longitude", placeholder = "(e.g.: 47.61, -122.21)"),
+               br(),
+               f7Text(ns("label"), label = "Label", placeholder = "My favorite bar"),
+               br(),
+               f7Button(ns("add"), label = "Add Location"),
+               br(),
+               uiOutput(ns("list")),
+               br(),
+               f7Button(ns("reset"), label = "Reset", color = "red"),
+               br(),
+               uiOutput(ns("new_export_button")
+               )),
+             br()
              ),
-      br(),
+      
       column(12,
              f7Card(title = "Map",
                     leafletOutput(ns("trip_map"))
@@ -54,7 +57,6 @@ own_route_server <- function(id) {
         lat <- as.numeric(lat_long[[1]][1])
         long <- as.numeric(lat_long[[1]][2])
         
-
         if (nchar(input$label) == 0) {
           f7Dialog(
             id = ns("check"),
@@ -158,20 +160,57 @@ own_route_server <- function(id) {
       
     })
     
+    output$select_map <- renderLeaflet({
+      leaflet() %>% 
+        addTiles() %>% 
+        leaflet.extras::addSearchOSM(options = searchOptions(collapsed = FALSE))
+    })
+    
+    
+    observeEvent(input$select_map_search_location_found, {
+      lat_long <- paste0(input$select_map_search_location_found$latlng$lat, ", ", 
+                         input$select_map_search_location_found$latlng$lng)
+      
+      updateF7Text("lat_long", value = lat_long)
+      
+    })
+    
+    observeEvent(input$select_map_click, {
+      
+      lat_long <- paste0(input$select_map_click$lat, ", ", 
+                         input$select_map_click$lng)
+
+      updateF7Text("lat_long", value = lat_long)
+    })
+    
+    
+    
     output$list <- renderUI({
       validate(need(nrow(values$location) > 0, message = ""))
 
+      df <- values$location %>% 
+        data.frame %>% 
+        rownames_to_column()
+      
+      names(df) <- c("Label", "Longitude", "Latitude")
+      
+      
       tagList(
         "Your entries: ",
-        f7List(
-          lapply(1:nrow(values$location), function(j) {
-            f7ListItem(paste0(rownames(values$location)[j])," (", values$location[j,][1], values$location[j,][2], ")")
-          })
+        div(id = "entries_table",
+            f7Table(
+              df
+            ) 
+          
         )
+
       )
       
       
     })
+    
+    
+    
     
     output$new_export_button <- renderUI({
       validate(need(values$trips, ""))
@@ -197,14 +236,22 @@ own_route_server <- function(id) {
     })
     
     output$explanation <- renderText({
-      validate(need(values$trips, ""))
+
+      text <- "Here you can find your own optimal route. Search them on the map and add them to your list.
+      The first location is your start and end location. The algorithm calculates the optimal route between all selected locations.
+      You can export the route to google maps for directions (not in google maps app)."
       
-      
-      paste0("Add your own locations and calculate your optimal route! 
-      
+      if(is.null(values$trips)) {
+        text 
+      } else {
+        paste0(text, " Add your own locations and calculate your optimal route! 
              
              The new optimal route would take you ", round(values$trips[[1]]$summary$duration, 2), " minutes to complete by car. ",
-             "The total distance is ", round(values$trips[[1]]$summary$distance, 2), " kilometers.")
+               "The total distance is ", round(values$trips[[1]]$summary$distance, 2), " kilometers.")
+        
+        
+      }
+        
       
     })
     

@@ -10,6 +10,11 @@ map_ui <- function(id) {
     fluidRow(
       column(12,
              f7Card(
+               title = "Tour de Café",
+               textOutput(ns("explanation"))
+             )),
+      column(12,
+             f7Card(
                title = "Optimal Route",
                textOutput(ns("time"))
              )),
@@ -166,6 +171,13 @@ map_server <- function(id) {
       
       updateF7Gauge(id = "map-gauge_distance",
                     value = round(values$saving_percentage_distance, 2))
+      
+    })
+    
+    output$explanation <- renderText({
+      "I had to drive to eight different café locations and back for my student job almost daily. Naturally, the question of which way is the fastest came to mind. This is also known as the traveling salesman problem. This app is an application of that optimization problem. On the first tab, my problem café problem is visualized. In my case, I actually reduced the total distance by almost 17%! On the second tab, you can optimize your route.
+      "
+      
       
     })
 
