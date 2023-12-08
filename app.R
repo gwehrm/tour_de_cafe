@@ -12,7 +12,7 @@ library(googleAuthR)
 library(config)
 library(shinyjs)
 library(shinyMobile)
-
+library(tibble)
 library(apexcharter)
 library(dplyr)
 library(ggplot2)
