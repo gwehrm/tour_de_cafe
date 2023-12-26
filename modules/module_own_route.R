@@ -12,7 +12,9 @@ own_route_ui <- function(id) {
              )),
       column(12,
              f7Card(title = "Choose Location",
-             leafletOutput(ns("select_map")))),
+                    f7Text(ns("label"), label = "Label", placeholder = "Add here a label before searching on the map"),
+                    br(),
+                    leafletOutput(ns("select_map")))),
       
       column(12,
              f7Card(
@@ -20,8 +22,6 @@ own_route_ui <- function(id) {
                title = "Add to List",
                
                f7Text(ns("lat_long"), label = "Latitude, Longitude", placeholder = "(e.g.: 47.61, -122.21)"),
-               br(),
-               f7Text(ns("label"), label = "Label", placeholder = "My favorite bar"),
                br(),
                f7Button(ns("add"), label = "Add Location"),
                br(),
@@ -237,7 +237,7 @@ own_route_server <- function(id) {
     
     output$explanation <- renderText({
 
-      text <- "Here you can find your own optimal route. Search them on the map and add them to your list.
+      text <- "Here you can find your own optimal route. Add a label, search for your location on the map and add it to your list.
       The first location is your start and end location. The algorithm calculates the optimal route between all selected locations.
       You can export the route to google maps for directions (not in google maps app)."
       

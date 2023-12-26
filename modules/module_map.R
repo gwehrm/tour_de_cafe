@@ -149,7 +149,7 @@ map_server <- function(id) {
       total_trip <- data.frame("duration" = numeric(),
                                "distance" = numeric())
       for(i in 1:nrow(values$selected_locations)) {
-        print(i)
+        
         if (i == nrow(values$selected_locations)) {
           route <- osrmRoute(src = values$selected_locations[i,],
                              dst = values$selected_locations[1,])
@@ -175,8 +175,7 @@ map_server <- function(id) {
     })
     
     output$explanation <- renderText({
-      "I had to drive to eight different café locations and back for my student job almost daily. Naturally, the question of which way is the fastest came to mind. This is also known as the traveling salesman problem. This app is an application of that optimization problem. On the first tab, my problem café problem is visualized. In my case, I actually reduced the total distance by almost 17%! On the second tab, you can optimize your route.
-      "
+      "I have to drive to eight different café locations and back for my student job almost daily. Naturally, the question of which way is the fastest came up. This question is also known as the traveling salesman problem. This app solves that for me and provides me with the optimal route to travel. On the first tab, my café problem is visualized. In my case, I reduced the total distance by almost 17%! On the second tab, you can optimize your route.      "
       
       
     })
