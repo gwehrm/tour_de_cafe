@@ -10,7 +10,7 @@ map_ui <- function(id) {
     fluidRow(
       column(12,
              f7Card(
-               title = "Tour de Café",
+               title = "Tour des Cafés",
                textOutput(ns("explanation"))
              )),
       column(12,

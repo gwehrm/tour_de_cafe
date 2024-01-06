@@ -37,11 +37,11 @@ library(shinyWidgets)
 
 shinyApp(
   ui = f7Page(
-    title = "Tour De Cafés",
+    title = "Tour Des Cafés",
     options = list(dark = FALSE),
     f7TabLayout(
       navbar = f7Navbar(
-        title = "Tour De Cafés",
+        title = "Tour Des Cafés",
         hairline = TRUE,
         shadow = TRUE,
         leftPanel = FALSE,
