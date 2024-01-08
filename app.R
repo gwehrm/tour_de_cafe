@@ -37,6 +37,7 @@ library(shinyWidgets)
 
 shinyApp(
   ui = f7Page(
+    tags$head(includeHTML("G_analytics.html")),
     title = "Tour Des Cafés",
     options = list(dark = FALSE),
     f7TabLayout(
